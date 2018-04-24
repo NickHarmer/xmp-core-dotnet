@@ -40,6 +40,11 @@ The project targets `net35` and `netstandard1.0`, meaning you can use it pretty 
 Initially ported by Yakov Danila and Nathanael Jones, the project is now maintained
 by Drew Noakes and contributors on GitHub.
 
+24 March 2018 NickHarmer:
+-------------------------
+
+Additional option added to allow decoding of (illegal) XMP packets which contain duplicate properties.  Set ParserOptions.AllowDuplicateProperties to TRUE to prevent raising XmpExceptions when packets contain duplicate properties.
+
 ## License
 
 The [same BSD license](http://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html) applies to this project
