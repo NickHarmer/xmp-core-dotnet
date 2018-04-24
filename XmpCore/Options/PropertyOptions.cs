@@ -30,6 +30,9 @@ namespace XmpCore.Options
         internal const int ArrayAltTextFlag = 0x00001000;
         internal const int SchemaNodeFlag = unchecked((int)0x80000000);
 
+        /// <summary>Do not throw if a duplicate property is detected</summary>
+        internal const int AllowDuplicatePropertiesFlag = (int) 0x40000000;
+
         /// <summary>may be used in the future</summary>
         internal const int DeleteExisting = 0x20000000;
 
@@ -174,6 +177,17 @@ namespace XmpCore.Options
         /// <value>Returns whether the property is of composite type - an array or a struct.</value>
         public bool IsSimple => !IsCompositeProperty;
 
+        /// <value>
+        ///   Return whether this property is an alt-text array. Appears in conjunction with
+        ///   getPropArrayIsAlternate(). It is serialized using an <tt>rdf:Alt</tt> container.
+        ///   Each array element is a simple property with an <tt>xml:lang</tt> attribute.
+        /// </value>
+        public bool IsAllowingDuplicateProperties
+        {
+            get => GetOption(AllowDuplicatePropertiesFlag);
+            set => SetOption(AllowDuplicatePropertiesFlag, value);
+        }
+
         /// <summary>Compares two options set for array compatibility.</summary>
         /// <param name="options">other options</param>
         /// <returns>Returns true if the array options of the sets are equal.</returns>
@@ -198,7 +212,8 @@ namespace XmpCore.Options
         /// <value>Returns true if only array options are set.</value>
         public bool IsOnlyArrayOptions => (GetOptions() & ~(ArrayFlag | ArrayOrderedFlag | ArrayAlternateFlag | ArrayAltTextFlag)) == 0;
 
-        protected override int GetValidOptions() => IsUriFlag | HasQualifiersFlag | QualifierFlag | HasLanguageFlag | HasTypeFlag | StructFlag | ArrayFlag | ArrayOrderedFlag | ArrayAlternateFlag | ArrayAltTextFlag | DeleteExisting | SchemaNodeFlag;
+        protected override int GetValidOptions() => IsUriFlag | HasQualifiersFlag | QualifierFlag | HasLanguageFlag | HasTypeFlag | StructFlag | ArrayFlag | ArrayOrderedFlag | ArrayAlternateFlag | ArrayAltTextFlag | DeleteExisting | SchemaNodeFlag |
+                                                    AllowDuplicatePropertiesFlag;
 
         protected override string DefineOptionName(int option)
         {
@@ -226,6 +241,9 @@ namespace XmpCore.Options
                     return "ARRAY_ALT_TEXT";
                 case SchemaNodeFlag:
                     return "SCHEMA_NODE";
+                case AllowDuplicatePropertiesFlag:
+                    return "ALLOW_DUPLICATE_PROPERTIES";
+
                 default:
                     return null;
             }

@@ -43,6 +43,9 @@ namespace XmpCore.Impl
         private string _packetHeader;
 
         /// <summary>Constructor for an empty metadata object.</summary>
+        public XmpMeta(ParseOptions options) : this(new XmpNode(null, null, new PropertyOptions() { IsAllowingDuplicateProperties = options.AllowDuplicateProperties })) { }
+
+        /// <summary>Constructor for an empty metadata object.</summary>
         public XmpMeta() : this(new XmpNode(null, null, null))
         {}
 

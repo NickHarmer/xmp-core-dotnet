@@ -131,6 +131,6 @@ namespace XmpCore.Options
             }
         }
 
-        protected override int GetValidOptions() => RequireXmpMetaFlag | StrictAliasingFlag | FixControlCharsFlag | AcceptLatin1Flag | OmitNormalizationFlag | DisallowDoctypeFlag;
+        protected override int GetValidOptions() => RequireXmpMetaFlag | StrictAliasingFlag | FixControlCharsFlag | AcceptLatin1Flag | OmitNormalizationFlag | DisallowDoctypeFlag | AllowDuplicatePropertiesFlag;
     }
 }

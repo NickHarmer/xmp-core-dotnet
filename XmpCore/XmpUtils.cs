@@ -183,10 +183,11 @@ namespace XmpCore
         /// <param name="doAllProperties">Do internal properties in addition to external properties.</param>
         /// <param name="replaceOldValues">Replace the values of existing properties.</param>
         /// <param name="deleteEmptyValues">Delete destination values if source property is empty.</param>
+        /// <param name="parseOptions">Parser options.</param>
         /// <exception cref="XmpException">Forwards the Exceptions from the metadata processing</exception>
-        public static void AppendProperties(IXmpMeta source, IXmpMeta dest, bool doAllProperties, bool replaceOldValues, bool deleteEmptyValues = false)
+        public static void AppendProperties(IXmpMeta source, IXmpMeta dest, bool doAllProperties, bool replaceOldValues, bool deleteEmptyValues = false, ParseOptions parseOptions = null)
         {
-            Impl.XmpUtils.AppendProperties(source, dest, doAllProperties, replaceOldValues, deleteEmptyValues);
+            Impl.XmpUtils.AppendProperties(source, dest, doAllProperties, replaceOldValues, deleteEmptyValues, parseOptions);
         }
 
         /// <summary>Convert from string to Boolean.</summary>

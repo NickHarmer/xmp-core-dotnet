@@ -77,7 +77,7 @@ namespace XmpCore.Impl
             var schemaNode = tree.FindChildByName(namespaceUri);
             if (schemaNode == null && createNodes)
             {
-                var po = new PropertyOptions {IsSchemaNode = true};
+                var po = new PropertyOptions {IsSchemaNode = true, IsAllowingDuplicateProperties = tree.Options.IsAllowingDuplicateProperties};
                 schemaNode = new XmpNode(namespaceUri, po) {IsImplicit = true};
                 // only previously registered schema namespaces are allowed in the XMP tree.
                 var prefix = XmpMetaFactory.SchemaRegistry.GetNamespacePrefix(namespaceUri);
@@ -128,7 +128,7 @@ namespace XmpCore.Impl
             var childNode = parent.FindChildByName(childName);
             if (childNode == null && createNodes)
             {
-                var options = new PropertyOptions();
+                var options = new PropertyOptions() { IsAllowingDuplicateProperties = parent.Options.IsAllowingDuplicateProperties };
                 childNode = new XmpNode(childName, options) {IsImplicit = true};
                 parent.AddChild(childNode);
             }

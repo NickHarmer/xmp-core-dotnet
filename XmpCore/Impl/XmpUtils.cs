@@ -270,7 +270,7 @@ namespace XmpCore.Impl
                 }
 
                 if (foundIndex < 0)
-                    arrayNode.AddChild(new XmpNode(XmpConstants.ArrayItemName, itemValue, null));
+                    arrayNode.AddChild(new XmpNode(XmpConstants.ArrayItemName, itemValue, new PropertyOptions() { IsAllowingDuplicateProperties = arrayOptions.IsAllowingDuplicateProperties }));
                 // <#AdobePrivate>
                 // else
                 // {
@@ -416,8 +416,9 @@ namespace XmpCore.Impl
         /// <param name="doAllProperties">Do internal properties in addition to external properties.</param>
         /// <param name="replaceOldValues">Replace the values of existing properties.</param>
         /// <param name="deleteEmptyValues">Delete destination values if source property is empty.</param>
+        /// <param name="parseOptions">Parser options.</param>
         /// <exception cref="XmpException">Forwards the Exceptions from the metadata processing</exception>
-        public static void AppendProperties(IXmpMeta source, IXmpMeta destination, bool doAllProperties, bool replaceOldValues, bool deleteEmptyValues)
+        public static void AppendProperties(IXmpMeta source, IXmpMeta destination, bool doAllProperties, bool replaceOldValues, bool deleteEmptyValues, ParseOptions parseOptions)
         {
             ParameterAsserts.AssertImplementation(source);
             ParameterAsserts.AssertImplementation(destination);
@@ -434,7 +435,7 @@ namespace XmpCore.Impl
 
                 if (destSchema == null)
                 {
-                    destSchema = new XmpNode(sourceSchema.Name, sourceSchema.Value, new PropertyOptions { IsSchemaNode = true });
+                    destSchema = new XmpNode(sourceSchema.Name, sourceSchema.Value, new PropertyOptions { IsSchemaNode = true, IsAllowingDuplicateProperties = parseOptions.AllowDuplicateProperties});
                     dest.GetRoot().AddChild(destSchema);
                     createdSchema = true;
                 }

@@ -128,7 +128,7 @@ namespace XmpCore.Impl
 
             if (result == null || result[1] != XmpRdf)
                 // no appropriate root node found, return empty metadata object
-                return new XmpMeta();
+                return new XmpMeta(options);
 
             // <#AdobePrivate>
             // The Plain XMP format is disabled

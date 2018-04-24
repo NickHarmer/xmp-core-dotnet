@@ -69,7 +69,7 @@ namespace XmpCore.Impl
         /// <summary>Resets the node.</summary>
         public void Clear()
         {
-            _options = null;
+            _options = new PropertyOptions { IsAllowingDuplicateProperties = Options.IsAllowingDuplicateProperties };
             Name = null;
             Value = null;
             _children = null;
@@ -628,7 +628,7 @@ namespace XmpCore.Impl
         /// <exception cref="XmpException">Thrown if a node with the same name is existing.</exception>
         private void AssertChildNotExisting(string childName)
         {
-            if (childName != XmpConstants.ArrayItemName && FindChildByName(childName) != null)
+            if (!(_options?.IsAllowingDuplicateProperties ?? false) && childName != XmpConstants.ArrayItemName && FindChildByName(childName) != null)
                 throw new XmpException("Duplicate property or field node '" + childName + "'", XmpErrorCode.BadXmp);
         }
 
@@ -637,7 +637,7 @@ namespace XmpCore.Impl
         /// <exception cref="XmpException">Thrown if a node with the same name is existing.</exception>
         private void AssertQualifierNotExisting(string qualifierName)
         {
-            if (qualifierName != XmpConstants.ArrayItemName && FindQualifierByName(qualifierName) != null)
+            if (!(_options?.IsAllowingDuplicateProperties ?? false) && qualifierName != XmpConstants.ArrayItemName && FindQualifierByName(qualifierName) != null)
                 throw new XmpException("Duplicate '" + qualifierName + "' qualifier", XmpErrorCode.BadXmp);
         }
 

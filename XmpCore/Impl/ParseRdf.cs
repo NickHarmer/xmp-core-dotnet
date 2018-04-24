@@ -84,7 +84,7 @@ namespace XmpCore.Impl
         /// <exception cref="XmpException">Occurs if the parsing fails for any reason.</exception>
         internal static XmpMeta Parse(XElement xmlRoot, ParseOptions options)
         {
-            var xmp = new XmpMeta();
+            var xmp = new XmpMeta(options);
             Rdf_RDF(xmp, xmlRoot, options);
             return xmp;
         }
@@ -228,7 +228,7 @@ namespace XmpCore.Impl
                     }
                     case RdfTerm.Other:
                     {
-                        AddChildNode(xmp, xmpParent, attribute, attribute.Value, isTopLevel);
+                        AddChildNode(xmp, xmpParent, attribute, attribute.Value, isTopLevel, options);
                         break;
                     }
                     default:
@@ -345,7 +345,7 @@ namespace XmpCore.Impl
             if (attributes.Count - ignoreNodes.Count > 3)
             {
                 // Only an emptyPropertyElt can have more than 3 attributes.
-                Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel);
+                Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
             }
             else
             {
@@ -369,9 +369,9 @@ namespace XmpCore.Impl
                     var attrValue = foundAttrib.Value;
 
                     if (attrLocal == "datatype" && attrNs == XmpConstants.NsRdf)
-                        Rdf_LiteralPropertyElement(xmp, xmpParent, xmlNode, isTopLevel);
+                        Rdf_LiteralPropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
                     else if (!(attrLocal == "parseType" && attrNs == XmpConstants.NsRdf))
-                        Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel);
+                        Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
                     else if (attrValue == "Literal")
                         Rdf_ParseTypeLiteralPropertyElement();
                     else if (attrValue == "Resource")
@@ -387,13 +387,13 @@ namespace XmpCore.Impl
                     // or an emptyPropertyElt. Look at the child XML nodes to decide which.
                     if (xmlNode.IsEmpty)
                     {
-                        Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel);
+                        Rdf_EmptyPropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
                     }
                     else
                     {
                         var nonTextNode = xmlNode.Nodes().FirstOrDefault(t => t.NodeType != XmlNodeType.Text);
                         if (nonTextNode == null)
-                            Rdf_LiteralPropertyElement(xmp, xmpParent, xmlNode, isTopLevel);
+                            Rdf_LiteralPropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
                         else
                             Rdf_ResourcePropertyElement(xmp, xmpParent, xmlNode, isTopLevel, options);
                     }
@@ -424,7 +424,7 @@ namespace XmpCore.Impl
                 return;
             }
 
-            var newCompound = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel);
+            var newCompound = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel, options);
 
             // walk through the attributes
             foreach (var attribute in xmlNode.Attributes())
@@ -438,7 +438,7 @@ namespace XmpCore.Impl
                 var attrNs = attribute.Name.NamespaceName;
                 if ("xml:" + attribute.Name.LocalName == XmpConstants.XmlLang)
                 {
-                    AddQualifierNode(newCompound, XmpConstants.XmlLang, attribute.Value);
+                    AddQualifierNode(newCompound, XmpConstants.XmlLang, attribute.Value, options);
                 }
                 else
                 {
@@ -493,7 +493,7 @@ namespace XmpCore.Impl
                     {
                         var typeName = currChildElem.Name.NamespaceName;
                         typeName += ':' + childLocal;
-                        AddQualifierNode(newCompound, "rdf:type", typeName);
+                        AddQualifierNode(newCompound, "rdf:type", typeName, options);
                     }
                 }
 
@@ -535,10 +535,11 @@ namespace XmpCore.Impl
         /// <param name="xmpParent">the parent xmp node</param>
         /// <param name="xmlNode">the currently processed XML node</param>
         /// <param name="isTopLevel">Flag if the node is a top-level node</param>
+        /// <param name="options">ParseOptions to indicate the parse options provided by the client</param>
         /// <exception cref="XmpException">thrown on parsing errors</exception>
-        private static void Rdf_LiteralPropertyElement(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, bool isTopLevel)
+        private static void Rdf_LiteralPropertyElement(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, bool isTopLevel, ParseOptions options)
         {
-            var newChild = AddChildNode(xmp, xmpParent, xmlNode, null, isTopLevel);
+            var newChild = AddChildNode(xmp, xmpParent, xmlNode, null, isTopLevel, options);
 
             foreach (var attribute in xmlNode.Attributes())
             {
@@ -552,7 +553,7 @@ namespace XmpCore.Impl
 
                 if ("xml:" + attribute.Name.LocalName == XmpConstants.XmlLang)
                 {
-                    AddQualifierNode(newChild, XmpConstants.XmlLang, attribute.Value);
+                    AddQualifierNode(newChild, XmpConstants.XmlLang, attribute.Value, options);
                 }
                 else
                 {
@@ -608,7 +609,7 @@ namespace XmpCore.Impl
         /// <exception cref="XmpException">thrown on parsing errors</exception>
         private static void Rdf_ParseTypeResourcePropertyElement(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, bool isTopLevel, ParseOptions options)
         {
-            var newStruct = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel);
+            var newStruct = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel, options);
 
             newStruct.Options.IsStruct = true;
 
@@ -624,7 +625,7 @@ namespace XmpCore.Impl
 
                 if ("xml:" + attribute.Name.LocalName == XmpConstants.XmlLang)
                 {
-                    AddQualifierNode(newStruct, XmpConstants.XmlLang, attribute.Value);
+                    AddQualifierNode(newStruct, XmpConstants.XmlLang, attribute.Value, options);
                 }
                 else
                 {
@@ -708,8 +709,9 @@ namespace XmpCore.Impl
         /// <param name="xmpParent">the parent xmp node</param>
         /// <param name="xmlNode">the currently processed XML node</param>
         /// <param name="isTopLevel">Flag if the node is a top-level node</param>
+        /// <param name="options">ParseOptions to indicate the parse options provided by the client</param>
         /// <exception cref="XmpException">thrown on parsing errors</exception>
-        private static void Rdf_EmptyPropertyElement(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, bool isTopLevel)
+        private static void Rdf_EmptyPropertyElement(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, bool isTopLevel, ParseOptions options)
         {
             // ! Can come from rdf:value or rdf:resource.
             if (xmlNode.FirstNode != null)
@@ -783,7 +785,7 @@ namespace XmpCore.Impl
             // ! Because of implementation vagaries,
             //   the xmpParent is the tree root for top level properties.
             // ! The schema is found, created if necessary, by addChildNode.
-            var childNode = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel);
+            var childNode = AddChildNode(xmp, xmpParent, xmlNode, string.Empty, isTopLevel, options);
             var childIsStruct = false;
             if (hasValueAttr || hasResourceAttr)
             {
@@ -818,21 +820,21 @@ namespace XmpCore.Impl
                     case RdfTerm.Resource:
                     {
                         // Ignore all rdf:ID and rdf:nodeID attributes.
-                        AddQualifierNode(childNode, "rdf:resource", attribute.Value);
+                        AddQualifierNode(childNode, "rdf:resource", attribute.Value, options);
                         break;
                     }
                     case RdfTerm.Other:
                     {
                         if (!childIsStruct)
                         {
-                            AddQualifierNode(childNode, attribute.Name.LocalName, attribute.Value);
+                            AddQualifierNode(childNode, attribute.Name.LocalName, attribute.Value, options);
                         }
                         else
                         {
                             if ("xml:" + attribute.Name.LocalName == XmpConstants.XmlLang)
-                                AddQualifierNode(childNode, XmpConstants.XmlLang, attribute.Value);
+                                AddQualifierNode(childNode, XmpConstants.XmlLang, attribute.Value, options);
                             else
-                                AddChildNode(xmp, childNode, attribute, attribute.Value, false);
+                                AddChildNode(xmp, childNode, attribute, attribute.Value, false, options);
                         }
                         break;
                     }
@@ -850,19 +852,20 @@ namespace XmpCore.Impl
         /// <param name="xmlNode">the currently processed XML node</param>
         /// <param name="value">Node value</param>
         /// <param name="isTopLevel">Flag if the node is a top-level node</param>
+        /// <param name="options">ParseOptions to indicate the parse options provided by the client</param>
         /// <returns>Returns the newly created child node.</returns>
         /// <exception cref="XmpException">thrown on parsing errors</exception>
-        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, string value, bool isTopLevel)
+        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XElement xmlNode, string value, bool isTopLevel, ParseOptions options)
         {
-            return AddChildNode(xmp, xmpParent, xmlNode.Name, xmlNode.GetPrefixOfNamespace(xmlNode.Name.Namespace), value, isTopLevel);
+            return AddChildNode(xmp, xmpParent, xmlNode.Name, xmlNode.GetPrefixOfNamespace(xmlNode.Name.Namespace), value, isTopLevel, options);
         }
 
-        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XAttribute xmlNode, string value, bool isTopLevel)
+        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XAttribute xmlNode, string value, bool isTopLevel, ParseOptions options)
         {
-            return AddChildNode(xmp, xmpParent, xmlNode.Name, xmlNode.Parent.GetPrefixOfNamespace(xmlNode.Name.Namespace), value, isTopLevel);
+            return AddChildNode(xmp, xmpParent, xmlNode.Name, xmlNode.Parent.GetPrefixOfNamespace(xmlNode.Name.Namespace), value, isTopLevel, options);
         }
 
-        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XName nodeName, string nodeNamespacePrefix, string value, bool isTopLevel)
+        private static XmpNode AddChildNode(XmpMeta xmp, XmpNode xmpParent, XName nodeName, string nodeNamespacePrefix, string value, bool isTopLevel, ParseOptions options)
         {
             var registry = XmpMetaFactory.SchemaRegistry;
             var ns = nodeName.NamespaceName;
@@ -888,7 +891,7 @@ namespace XmpCore.Impl
             var childName = prefix + nodeName.LocalName;
 
             // create schema node if not already there
-            var childOptions = new PropertyOptions();
+            var childOptions = new PropertyOptions() {IsAllowingDuplicateProperties = options.AllowDuplicateProperties};
             var isAlias = false;
 
             if (isTopLevel)
@@ -953,15 +956,16 @@ namespace XmpCore.Impl
         /// QName including the <b>default prefix</b>
         /// </param>
         /// <param name="value">the value of the qualifier</param>
+        /// <param name="options">ParseOptions to indicate the parse options provided by the client</param>
         /// <returns>Returns the newly created child node.</returns>
         /// <exception cref="XmpException">thrown on parsing errors</exception>
-        private static void AddQualifierNode(XmpNode xmpParent, string name, string value)
+        private static void AddQualifierNode(XmpNode xmpParent, string name, string value, ParseOptions options)
         {
             // normalize value of language qualifiers
             if (name == XmpConstants.XmlLang)
                 value = Utils.NormalizeLangValue(value);
 
-            xmpParent.AddQualifier(new XmpNode(name, value, null));
+            xmpParent.AddQualifier(new XmpNode(name, value, new PropertyOptions() {IsAllowingDuplicateProperties = options.AllowDuplicateProperties}));
         }
 
         /// <summary>The parent is an RDF pseudo-struct containing an rdf:value field.</summary>
