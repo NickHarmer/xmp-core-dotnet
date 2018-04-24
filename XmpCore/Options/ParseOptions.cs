@@ -37,6 +37,9 @@ namespace XmpCore.Options
         /// <summary>Disallow DOCTYPE declarations to prevent entity expansion attacks.</summary>
         public const int DisallowDoctypeFlag = 0x0040;
 
+        /// <summary>Do not throw if a duplicate property is detected</summary>
+        public const int AllowDuplicatePropertiesFlag = 0x0080;
+        
         /// <summary>Map of nodes whose children are to be limited.</summary>
         private Dictionary<string, int> mXMPNodesToLimit = new Dictionary<string, int>();
 
@@ -82,6 +85,12 @@ namespace XmpCore.Options
             set => SetOption(DisallowDoctypeFlag, value);
         }
 
+        public bool AllowDuplicateProperties   
+        {
+            get => GetOption(AllowDuplicatePropertiesFlag);
+            set => SetOption(AllowDuplicatePropertiesFlag, value);
+        }
+
         /// <summary>Returns true if some XMP nodes have been limited.</summary>
         public bool AreXMPNodesLimited => mXMPNodesToLimit.Count > 0;
 
@@ -115,6 +124,8 @@ namespace XmpCore.Options
                     return "OMIT_NORMALIZATION";
                 case DisallowDoctypeFlag:
                     return "DISALLOW_DOCTYPE";
+                case AllowDuplicatePropertiesFlag:
+                    return "ALLOW_DUPLICATE_PROPERTIES";
                 default:
                     return null;
             }
